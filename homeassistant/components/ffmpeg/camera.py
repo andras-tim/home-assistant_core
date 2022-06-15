@@ -13,15 +13,17 @@ import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
 
-from . import CONF_EXTRA_ARGUMENTS, CONF_INPUT, DATA_FFMPEG, async_get_image
+from . import CONF_EXTRA_ARGUMENTS, CONF_EXTRA_INPUT_ARGUMENTS, CONF_INPUT, DATA_FFMPEG, async_get_image
 
 DEFAULT_NAME = "FFmpeg"
 DEFAULT_ARGUMENTS = "-pred 1"
+DEFAULT_INPUT_ARGUMENTS = None
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     {
         vol.Required(CONF_INPUT): cv.string,
         vol.Optional(CONF_EXTRA_ARGUMENTS, default=DEFAULT_ARGUMENTS): cv.string,
+        vol.Optional(CONF_EXTRA_INPUT_ARGUMENTS, default=DEFAULT_INPUT_ARGUMENTS): cv.string,
         vol.Optional(CONF_NAME, default=DEFAULT_NAME): cv.string,
     }
 )
@@ -50,6 +52,7 @@ class FFmpegCamera(Camera):
         self._name = config.get(CONF_NAME)
         self._input = config.get(CONF_INPUT)
         self._extra_arguments = config.get(CONF_EXTRA_ARGUMENTS)
+        self._extra_input_arguments = config.get(CONF_EXTRA_INPUT_ARGUMENTS)
 
     async def stream_source(self):
         """Return the stream source."""
@@ -64,13 +67,18 @@ class FFmpegCamera(Camera):
             self._input,
             output_format=IMAGE_JPEG,
             extra_cmd=self._extra_arguments,
+            extra_input_cmd=self._extra_input_arguments,
         )
 
     async def handle_async_mjpeg_stream(self, request):
         """Generate an HTTP MJPEG stream from the camera."""
 
         stream = CameraMjpeg(self._manager.binary)
-        await stream.open_camera(self._input, extra_cmd=self._extra_arguments)
+        await stream.open_camera(
+            self._input,
+            extra_cmd=self._extra_arguments,
+            extra_input_cmd=self._extra_input_arguments
+        )
 
         try:
             stream_reader = await stream.get_reader()

@@ -39,6 +39,7 @@ CONF_INITIAL_STATE = "initial_state"
 CONF_INPUT = "input"
 CONF_FFMPEG_BIN = "ffmpeg_bin"
 CONF_EXTRA_ARGUMENTS = "extra_arguments"
+CONF_EXTRA_INPUT_ARGUMENTS = "extra_input_arguments"
 CONF_OUTPUT = "output"
 
 DEFAULT_BINARY = "ffmpeg"
